@@ -1,25 +1,32 @@
-import {watcher,} from './lib';
+import {
+    watcher,
+    isArrayLike,
+    isFunction,
+    isObject
+} from './lib';
 import {observerHandlers} from './observer-handlers';
 
-export default function(options) {
-    let _options = Object.assign({
-        data: {a: 1, b: 2}
-    }, options);
+export default class Vue {
+    constructor(options) {
+        this._assign(options);
+        this._init();
+        this._bindToThis();
+    }
 
-    _init();
+    // 赋值
+    _assign(options) {
+        this.$data    = options.data || {};
+        this.$methods = options.methods || {};
+    }
 
-    function _init() {
+    _bindToThis() {
+        Object.assign(this, this.$methods);
+    }
+
+    _init() {
         const observers = new Set();
         const observe   = fn => observers.add(fn);
         observerHandlers(observe);
-        window.data = watcher(_options.data, observers);
-
-
-
-
-
-
-
+        watcher(this, this.$data, observers);
     }
-
 }

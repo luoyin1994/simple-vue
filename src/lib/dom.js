@@ -1,29 +1,11 @@
 const VIRTUAL_NODE_TYPE = 'virtualNode';
 
-/**
- * 验证类型
- * @param value
- * @returns {Buffer|Array.<T>|string|Blob|ArrayBuffer}
- */
-function type(value) {
-    return ({}).toString.call(value).slice(8, -2);
-}
-
-function isString(value) {
-    return type(value) === 'string';
-}
-
-function isObject(value) {
-    return type(value) === 'object';
-}
-
-function isArray(value) {
-    return type(value) === 'array';
-}
-
-function isEmpty(value) {
-    return value == null;
-}
+import {
+    isEmpty,
+    isString,
+    isObject,
+    isArray
+} from './index';
 
 /**
  * 创建虚拟节点
