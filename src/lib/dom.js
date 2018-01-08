@@ -10,19 +10,19 @@ import {
 /**
  * 创建虚拟节点
  * @param nodeName
- * @param nodeAttr
+ * @param nodeAttributes
  * @param nodeChildren
- * @returns {{nodeName: String, nodeAttr: {}, nodeChildren: Array}}
+ * @returns {{nodeName: String, nodeAttributes: {}, nodeChildren: Array}}
  */
-export function createVirtualNode(nodeName = '', nodeAttr = {}, nodeChildren = []) {
+export function createVirtualNode(nodeName = '', nodeAttributes = {}, nodeChildren = []) {
     if (!isString(nodeName)) {
         throw new TypeError('arguments[0] should be a string.');
     }
 
-    if (isEmpty(nodeAttr)) nodeAttr = {};
+    if (isEmpty(nodeAttributes)) nodeAttributes = {};
     if (isEmpty(nodeChildren)) nodeChildren = [];
 
-    if (!isObject(nodeAttr)) {
+    if (!isObject(nodeAttributes)) {
         throw new TypeError('arguments[1] should be an object.');
     }
     if (!isEmpty(nodeChildren) && !isArray(nodeChildren)) {
@@ -30,12 +30,19 @@ export function createVirtualNode(nodeName = '', nodeAttr = {}, nodeChildren = [
     }
 
     if (nodeChildren.length) {
-        nodeChildren.forEach(child => child = createVirtualNode(child.nodeName, child.nodeAttr, child.nodeChildren));
+        nodeChildren.forEach((child, i) => {
+            if (isObject(child)) {
+                nodeChildren[i] = createVirtualNode(child.nodeName, child.nodeAttributes, child.nodeChildren);
+            }
+            if (isArray(child)) {
+                nodeChildren[i] = createVirtualNode(child[0], child[1], child[2]);
+            }
+        });
     }
 
     return {
         nodeName,
-        nodeAttr,
+        nodeAttributes,
         nodeChildren
     };
 }
@@ -47,9 +54,9 @@ export function createVirtualNode(nodeName = '', nodeAttr = {}, nodeChildren = [
  */
 export function createRealNode(virtualNode) {
     let realNode = document.createElement(virtualNode.nodeName);
-    Object.keys(virtualNode.nodeAttr).forEach(attr => {
+    Object.keys(virtualNode.nodeAttributes).forEach(attr => {
         if (attr !== undefined) {
-            realNode[attr] = virtualNode[attr];
+            realNode[attr] = virtualNode.nodeAttributes[attr];
         }
     });
     if (virtualNode.nodeChildren.length) {
@@ -68,4 +75,15 @@ export function createRealNode(virtualNode) {
 export function bindToRealDOM(targetID, realNode) {
     const target = document.getElementById(targetID);
     target.appendChild(realNode);
+}
+
+/**
+ * 替换节点
+ * @param newNode
+ * @param oldNode
+ * @returns {Node}
+ */
+export function replaceChild(targetID, newNode, oldNode) {
+    const target = document.getElementById(targetID);
+    return target.replaceChild(newNode, oldNode);
 }
